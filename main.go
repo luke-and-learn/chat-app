@@ -7,10 +7,10 @@ type Message struct {
 }
 
 Type Client struct {
-	hub			*Hub
-	conn		*websocket.Conn 
-	send		chan Message
-	username	string
+	hub		 *Hub
+	conn	 *websocket.Conn 
+	send	 chan Message
+	username string
 }
 
 func (c *Client) readPump() {
