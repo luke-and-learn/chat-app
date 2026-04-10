@@ -84,3 +84,36 @@ func (h *Hub) broadcastAll(msg Message) {
 		}
 	}
 }
+
+func main() {
+	hub := new Hub()
+	go hub.run()
+
+	r := gin.Default()
+
+	r.Static("/static", "./static")
+	r.GET("/", func(c *gin.Context) {
+		c.File(".static/index.html")
+	})
+
+	r.GET("/ws", func(c *gin.Context) {
+		username := c.Query("username")
+		if username == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "username required"})
+			return
+		}
+		conn, err := := upgrader.Upgrade(c.Writer, c.Request, nil)
+		if err != nil { return }
+
+		client := &Client{
+			hub: hub, conn: conn,
+			send: make(chan Message, 256),
+			username: username,
+		}
+		hub.register <- client
+		go client.writePump()
+		go client.readPump()
+	})
+
+	r.Run(":8080")
+}
