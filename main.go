@@ -1,3 +1,10 @@
+package main
+
+import (
+	"github.com/gin-gonic/gin"
+	"github.com/gorilla/websocket"
+)
+
 type Message struct {
 	Username	string	`json:"username"`
 	Text		string	`json:"text"`
