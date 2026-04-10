@@ -15,7 +15,7 @@ type Message struct {
 	UserCount	int		`json:"user_count"`
 }
 
-Type Client struct {
+type Client struct {
 	hub		 *Hub
 	conn	 *websocket.Conn 
 	send	 chan Message
@@ -47,7 +47,7 @@ func (c *Client) writePump() {
 	}
 }
 
-Type Hub struct {
+type Hub struct {
 	clients		map[*Client]bool
 	broadcast	chan Message
 	register	chan *Client
@@ -65,14 +65,13 @@ func (h *Hub) run() {
 				Type: 		"join",
 				UserCount:	len(h.clients),
 			})
-		}
 
 		case client := <-h.unregister:
 			if _, ok := h.clients[client]; ok {
 				delete(h.clients, client)
 				close(client.send)
 				h.broadcastAll(Message{
-					username:	client.username,
+					Username:	client.username,
 					Text: 		client.username + " left the chat",
 					Type: 		"leave",
 					UserCount: 	len(h.clients),
@@ -80,6 +79,7 @@ func (h *Hub) run() {
 			}
 		case msg := <-h.broadcast:
 			h.broadcastAll(msg)
+		}
 	}
 }
 
@@ -95,7 +95,7 @@ func (h *Hub) broadcastAll(msg Message) {
 }
 
 func main() {
-	hub := new Hub()
+	hub := newHub()
 	go hub.run()
 
 	r := gin.Default()
@@ -111,7 +111,7 @@ func main() {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "username required"})
 			return
 		}
-		conn, err := := upgrader.Upgrade(c.Writer, c.Request, nil)
+		conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 		if err != nil { return }
 
 		client := &Client{
