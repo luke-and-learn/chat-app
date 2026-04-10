@@ -54,6 +54,15 @@ type Hub struct {
 	unregister	chan *Client
 }
 
+func newHub() *Hub {
+	return &Hub{
+		clients: 	make(map[*Client]bool),
+		broadcast:	make(chan Message, 256),
+		register: 	make(chan *Client),
+		unregister: make(chan *Client),
+	}
+}
+
 func (h *Hub) run() {
 	for {
 		select {
@@ -92,6 +101,12 @@ func (h *Hub) broadcastAll(msg Message) {
 			delete(h.clients, client)
 		}
 	}
+}
+
+var upgrader = websocket.Upgrader{
+	ReadBufferSize:		1024,
+	WriteBufferSize:	1024,
+	CheckOrigin:		func(r *http.Request) bool { return true },
 }
 
 func main() {
